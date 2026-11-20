@@ -295,10 +295,9 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
                   onValueChange={(v) => player.scrub((Array.isArray(v) ? v[0] : v) / 1000)}
                   onValueCommitted={() => player.endScrub()}
                 />
-                <div className="-mt-1 flex justify-between gap-2 text-[12px] whitespace-nowrap text-muted-foreground tabular" aria-hidden>
+                <div className="-mt-1 flex justify-start gap-2 text-[12px] whitespace-nowrap text-muted-foreground tabular" aria-hidden>
                   <span>{Math.round((s.phase === "guide" ? 0 : s.t) * 100)}% of this fold</span>
-                  <span className="truncate">{step.title}</span>
-                </div>
+                                  </div>
               </div>
               <Button onClick={() => player.next()} className="min-w-[96px]" aria-label={isLast ? "Finish" : "Next step"}>
                 {isLast ? "Finish" : "Next"}

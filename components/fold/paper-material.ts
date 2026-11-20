@@ -160,7 +160,7 @@ export class PaperMaterial {
       bumpMap: this.bumpTex,
       bumpScale: 0.9,
       aoMap: this.aoTex,
-      aoMapIntensity: 0.55,
+      aoMapIntensity: 0.3,
     })
     this.setCreases(null, 0)
     const u = this.uniforms
@@ -244,8 +244,8 @@ outgoingLight += diffuseColor.rgb * uTrans * max( 0.0, dot( -normal, uKeyDir ) )
         g.lineWidth = 1.6
         g.stroke()
         a.lineCap = "round"
-        a.strokeStyle = "rgba(150,150,150,0.55)"
-        a.lineWidth = 3
+        a.strokeStyle = "rgba(170,170,170,0.45)"
+        a.lineWidth = 2.4
         a.beginPath()
         a.moveTo(A[0], A[1])
         a.lineTo(B[0], B[1])

@@ -64,7 +64,7 @@ export function Landing() {
             </div>
           </div>
         </section>
-        <footer className="mx-auto flex max-w-[1120px] flex-col gap-2 px-6 py-12 text-[13px] text-muted-foreground sm:flex-row sm:justify-between">
+        <footer className="mx-auto flex max-w-[1200px] flex-col gap-2 px-6 py-12 text-[13px] text-muted-foreground sm:flex-row sm:justify-between">
           <p>Fold. Traditional designs, folded by a computer and checked for physical correctness.</p>
           <p>
             <Link href="/models" className="underline-offset-4 hover:underline">

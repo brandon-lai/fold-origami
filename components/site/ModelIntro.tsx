@@ -22,7 +22,7 @@ export function ModelIntro({ m, n }: { m: LibraryEntry; n: number }) {
   const [size, side] = m.paper.split(", ")
   const resume = progress && !progress.done && progress.step > 0
   return (
-    <main className="mx-auto grid max-w-[1120px] grid-cols-1 items-center gap-6 px-4 pb-16 sm:px-6 lg:min-h-[calc(100dvh-56px)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <main className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-6 px-4 pb-16 sm:px-6 lg:min-h-[calc(100dvh-56px)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="order-2 flex flex-col gap-6 lg:order-1">
         <div>
           <p className="text-[15px] text-muted-foreground tabular">
