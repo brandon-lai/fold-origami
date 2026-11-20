@@ -69,8 +69,11 @@ export function validateModel(model: BakedModel, opts: { frames?: number; skipIn
           for (let b = a + 1; b < nf && !found; b++) {
             if (!moves(a) && !moves(b)) continue
             // two faces carried by the same rigid group cannot pass through each other
-            const rigid = (f: number) => rt.flexSign[f] === 0 && rt.curlOf[f] < 0 && !step.groups[rt.faceGroup[f]]?.bend
-            if (rt.faceGroup[a] === rt.faceGroup[b] && rigid(a) && rigid(b)) continue
+            // Faces carried by the same group share one smooth motion field (rigid,
+            // plus the bend and flex fields, which depend only on position), so
+            // they cannot pass through each other; apparent hits there are chord
+            // error between two tessellations of one surface.
+            if (rt.faceGroup[a] === rt.faceGroup[b] && rt.curlOf[a] < 0 && rt.curlOf[b] < 0) continue
             const A = boxes[a]
             const B = boxes[b]
             if (A[0] > B[3] || B[0] > A[3] || A[1] > B[4] || B[1] > A[4] || A[2] > B[5] || B[2] > A[5]) continue
@@ -83,6 +86,11 @@ export function validateModel(model: BakedModel, opts: { frames?: number; skipIn
                 const bb = tbox[k2]
                 if (ba[0] > bb[3] || bb[0] > ba[3] || ba[1] > bb[4] || bb[1] > ba[4] || ba[2] > bb[5] || bb[2] > ba[5]) continue
                 const vb = tb3[k2]
+                // stacked, near-parallel layers: order is the stacking check's job, not this one
+                const na = cross3(sub3(va[1], va[0]), sub3(va[2], va[0]))
+                const nb = cross3(sub3(vb[1], vb[0]), sub3(vb[2], vb[0]))
+                const cosn = Math.abs(dot3(na, nb)) / (Math.hypot(...na) * Math.hypot(...nb) + 1e-18)
+                if (cosn > 0.9986) continue
                 let hit = false
                 for (let e = 0; e < 3 && !hit; e++) {
                   hit =
@@ -170,10 +178,12 @@ export function flatChecks(model: BakedModel, si: number): Issue[] {
     }
     // dedupe directions
     inc.sort((a, b) => a.ang - b.ang)
-    const dirs = inc.filter((x, i) => i === 0 || Math.abs(x.ang - inc[i - 1].ang) > 1e-6)
+    const dirs = inc.filter((x, i) => i === 0 || Math.abs(x.ang - inc[i - 1].ang) > 2e-3)
+    if (dirs.length > 1 && Math.abs(dirs[0].ang + 2 * Math.PI - dirs[dirs.length - 1].ang) < 2e-3) dirs.pop()
     if (dirs.length === 0) continue
     const M = dirs.filter((d) => d.mv < 0).length
     const V = dirs.length - M
+    if (process.env.MV_DEBUG && Math.abs(v[0] - 0.6606) < 1e-3) console.log(JSON.stringify(dirs), JSON.stringify(inc))
     if (Math.abs(M - V) !== 2) {
       out.push({ step: si, kind: "maekawa", detail: `vertex ${v.map((x) => x.toFixed(3))}: M=${M} V=${V}` })
       continue

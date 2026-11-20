@@ -74,6 +74,12 @@ export interface GroupSpec {
    * solver left it to `end`. For folds that pass a singular point (petal folds).
    */
   handoff?: number
+  /** absolute driven angle as a function of step time (overrides end·profile) */
+  drive?: (t: number) => number
+  /** a free hinge that is driven (by `drive`) until this time, then solved */
+  freeFrom?: number
+  /** this hinge always turns by minus the angle of that (earlier) group */
+  mirrorOf?: number
 }
 
 export interface FlexSpec {
@@ -198,6 +204,28 @@ export class Engine {
     }
     throw new Error(`CP point ${u},${v} not on paper`)
   }
+  /** the live faces that descend from (or are) any of `ids` */
+  descendants(ids: number[]): number[] {
+    const set = new Set(ids)
+    return this.alive.filter((id) => {
+      let x: number | null = id
+      while (x !== null) {
+        if (set.has(x)) return true
+        x = this.faces[x].parent
+      }
+      return false
+    })
+  }
+
+  /** crease-pattern coordinates of the paper at world (x, y), at stack depth */
+  cpAt(x: number, y: number, depth = 0): V2 {
+    const st = this.facesAt(x, y, 1e-7)
+    const id = depth >= 0 ? st[depth] : st[st.length + depth]
+    if (id === undefined) throw new Error(`no paper at ${x},${y}`)
+    const c = apply(inverse(this.faces[id].T), [x, y, 0])
+    return [c[0], c[1]]
+  }
+
   /** faces covering a world point, top first */
   facesAt(x: number, y: number, tol = -1e-7): number[] {
     const hits = this.alive.filter((id) => {
@@ -468,11 +496,13 @@ export class Engine {
     const free = groups.map((g, i) => (g.free ? i : -1)).filter((i) => i >= 0)
     const drivenAt = (gi: number, t: number) => {
       const g = groups[gi]
+      if (g.drive) return g.drive(t)
       const u = g.window ? window01(t, g.window[0], g.window[1]) : t
       return g.end * (g.profile ? g.profile(u) : easeInOut(u))
     }
     const refAt = (gi: number, t: number) => {
       const g = groups[gi]
+      if (Number.isNaN(g.end)) return g.ref ? g.ref(t) : 0
       return g.end * (g.ref ? g.ref(t) : easeInOut(t))
     }
     let reg = spec.reg ?? 0.02
@@ -488,7 +518,16 @@ export class Engine {
     const setAngles = (t: number, x: number[]) => {
       groups.forEach((_, gi) => {
         const fi = free.indexOf(gi)
-        const a = handed(gi, t) ? handoffAt(gi, t) : fi >= 0 ? x[fi] : drivenAt(gi, t)
+        const early = groups[gi].freeFrom !== undefined && t < (groups[gi].freeFrom as number)
+        const mo = groups[gi].mirrorOf
+        const a =
+          mo !== undefined
+            ? -live.groups[mo].a[0]
+            : handed(gi, t)
+              ? handoffAt(gi, t)
+              : fi >= 0 && !early
+                ? x[fi]
+                : drivenAt(gi, t)
         live.groups[gi].a = [a, a]
       })
     }
@@ -568,11 +607,25 @@ export class Engine {
         const g = groups[gi]
         if (g.handoff !== undefined && t >= g.handoff && !handA.has(gi)) handA.set(gi, x[k])
       })
+      free.forEach((gi, k) => {
+        const g = groups[gi]
+        if (g.freeFrom !== undefined && t <= g.freeFrom) x[k] = drivenAt(gi, Math.min(t, g.freeFrom))
+      })
       x = solve(t, x)
-      if (s === SAMPLES) x = free.map((gi) => groups[gi].end)
+      if (s === SAMPLES) x = free.map((gi, k) => (Number.isNaN(groups[gi].end) ? x[k] : groups[gi].end))
       groups.forEach((_, gi) => {
         const fi = free.indexOf(gi)
-        samples[gi].push(handed(gi, t) && s < SAMPLES ? handoffAt(gi, t) : fi >= 0 ? x[fi] : drivenAt(gi, t))
+        const early = groups[gi].freeFrom !== undefined && t < (groups[gi].freeFrom as number)
+        const mo = groups[gi].mirrorOf
+        samples[gi].push(
+          mo !== undefined
+            ? -samples[mo][samples[mo].length - 1]
+            : handed(gi, t) && s < SAMPLES
+              ? handoffAt(gi, t)
+              : fi >= 0 && !early
+                ? x[fi]
+                : drivenAt(gi, t)
+        )
       })
     }
     live.groups.forEach((g, gi) => (g.a = samples[gi]))
@@ -634,7 +687,7 @@ export class Engine {
     // stacking order from the direction of approach
     let order = this.order
     if (flatEnd) {
-      order = spec.order ?? this.orderFromMotion(alive, idx, live, rt, newT, groups, free, x, solve)
+      order = spec.order ?? this.orderFromMotion(alive, idx, live, rt, newT, groups, free, x, solve, setAngles, drivenAt)
     }
 
     const o1 = new Map<number, V3>()
@@ -716,21 +769,38 @@ export class Engine {
     live: BakedStep,
     rt: ReturnType<typeof prepareStep>,
     newT: Map<number, Mat>,
-    groups: { end: number; profile?: (u: number) => number; approach?: number }[],
+    groups: GroupSpec[],
     free: number[],
     xEnd: number[],
-    solve: (t: number, x0: number[]) => number[]
+    solve: (t: number, x0: number[]) => number[],
+    setAngles: (t: number, x: number[]) => void,
+    drivenAt: (gi: number, t: number) => number
   ): number[] {
     const prev = new Map(this.order.map((id, i) => [id, i]))
     // near-final configuration: every hinge a hair short of its end angle
     const DEL = 0.004
     const xs = solve(1 - DEL, xEnd)
     const saved = live.groups.map((g) => g.a)
+    // the real pose a moment before landing: driven hinges from their own curves
+    // (a hinge whose window already closed is judged just before its own end),
+    // free hinges from the solver, mirrored hinges mirrored, approach overrides last
+    setAngles(1 - DEL, xs)
     live.groups.forEach((g, gi) => {
-      const fi = free.indexOf(gi)
       const G = groups[gi]
-      const a = fi >= 0 ? xs[fi] : G.end * (G.approach ?? (G.profile ? G.profile(1 - DEL) : 1 - DEL))
-      g.a = [a, a]
+      if (G.approach !== undefined) {
+        g.a = [G.end * G.approach, G.end * G.approach]
+        return
+      }
+      if (free.includes(gi) || G.mirrorOf !== undefined) return
+      if (G.window && G.window[1] < 1 - DEL) {
+        const tl = G.window[0] + (G.window[1] - G.window[0]) * (1 - DEL)
+        const a = drivenAt(gi, tl)
+        g.a = [a, a]
+      }
+    })
+    live.groups.forEach((g, gi) => {
+      const mo = groups[gi].mirrorOf
+      if (mo !== undefined) g.a = [-live.groups[mo].a[0], -live.groups[mo].a[0]]
     })
     const mats = groupMatrices(live, 0)
     // height of the material of face i that ends up over world (x, y)
@@ -772,7 +842,8 @@ export class Engine {
         const cb = cls(b)
         let aAbove: boolean
         const prevAbove = (prev.get(a) as number) > (prev.get(b) as number)
-        if (ca === cb && !rt.flexSign[i] && !rt.flexSign[j]) {
+        // faces that move together keep their relative order (flexed faces open and close back)
+        if (ca === cb) {
           aAbove = ca >= 0 && flips(ca) ? !prevAbove : prevAbove
         } else {
           const c = centroid2(ov)
@@ -808,7 +879,14 @@ export class Engine {
         if (indeg.get(x) === 0) ready.push(x)
       }
     }
-    if (out.length !== alive.length) throw new Error("stacking order has a cycle")
+    if (out.length !== alive.length) {
+      if (process.env.FOLD_TEAR_OK) {
+        const rest = alive.filter((id) => !out.includes(id))
+        console.warn("stacking order has a cycle; keeping the previous order (debug)", rest.map((id) => `${id}(g${cls(id)}) above: ${[...(above.get(id) as Set<number>)].filter((x) => rest.includes(x)).join(",")}`))
+        return this.order
+      }
+      throw new Error("stacking order has a cycle")
+    }
     return out
   }
 

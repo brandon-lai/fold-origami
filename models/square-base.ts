@@ -12,7 +12,7 @@ export function squareBaseModel() {
       paper: "15 cm square, colour side down",
       technique: "Collapsing along existing creases",
       blurb: "Four creases, one collapse. The starting point for the crane, the bird and the lily.",
-      next: "masu-box",
+      next: "flapping-bird",
     },
     { rotate: Math.PI / 4 }
   )

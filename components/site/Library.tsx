@@ -32,7 +32,7 @@ export function Library({ models }: { models: LibraryEntry[] }) {
       {shown.length ? (
         <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((m) => (
-            <Card key={m.slug} m={m} />
+            <Card key={m.slug} m={m} total={models.length} />
           ))}
         </ul>
       ) : (
@@ -69,7 +69,7 @@ function Filter({ label, value, onChange, options }: { label: string; value: str
   )
 }
 
-function Card({ m }: { m: LibraryEntry & { n: number } }) {
+function Card({ m, total }: { m: LibraryEntry & { n: number }; total: number }) {
   const [live, setLive] = useState(false)
   const [model, setModel] = useState<BakedModel | null>(null)
   const [progress, setProgress] = useState<{ step: number; done: boolean } | null>(null)
@@ -104,7 +104,7 @@ function Card({ m }: { m: LibraryEntry & { n: number } }) {
         <div className="flex flex-1 flex-col gap-1 p-5">
           <div className="flex items-baseline justify-between gap-3 text-[13px] text-muted-foreground tabular">
             <span>
-              {m.n} of 7, {m.level.toLowerCase()}
+              {m.n} of {total}, {m.level.toLowerCase()}
             </span>
             <span>
               {m.steps} steps, {m.minutes} min

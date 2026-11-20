@@ -13,9 +13,35 @@ export const LIBRARY: LibraryEntry[] = [
     "paper": "15 cm square, colour side down",
     "technique": "Valley folds, tucking a flap",
     "blurb": "Six folds and a pocket. The first model everyone should make.",
-    "next": "square-base",
+    "next": "masu-box",
     "steps": 6,
     "kb": 3
+  },
+  {
+    "slug": "masu-box",
+    "title": "Masu box",
+    "level": "Beginner",
+    "difficulty": 2,
+    "minutes": 8,
+    "paper": "15 cm square, colour side down",
+    "technique": "Blintz fold, opening flat paper into 3D",
+    "blurb": "A square measuring box with no glue. The first model that stands up off the table.",
+    "next": "jumping-frog",
+    "steps": 9,
+    "kb": 7
+  },
+  {
+    "slug": "jumping-frog",
+    "title": "Jumping frog",
+    "level": "Beginner",
+    "difficulty": 2,
+    "minutes": 8,
+    "paper": "7.5 × 15 cm (half a square), colour side down",
+    "technique": "Pleats, folding through layers",
+    "blurb": "A waterbomb collapse, two legs and a spring-loaded pleat. Press its back and it jumps.",
+    "next": "square-base",
+    "steps": 12,
+    "kb": 6
   },
   {
     "slug": "square-base",
@@ -26,9 +52,22 @@ export const LIBRARY: LibraryEntry[] = [
     "paper": "15 cm square, colour side down",
     "technique": "Collapsing along existing creases",
     "blurb": "Four creases, one collapse. The starting point for the crane, the bird and the lily.",
-    "next": "masu-box",
+    "next": "flapping-bird",
     "steps": 6,
     "kb": 5
+  },
+  {
+    "slug": "flapping-bird",
+    "title": "Flapping bird",
+    "level": "Intermediate",
+    "difficulty": 3,
+    "minutes": 12,
+    "paper": "15 cm square, colour side down",
+    "technique": "Petal fold, the bird base",
+    "blurb": "Pull its tail and the wings beat. Your first petal folds, without the crane’s fine finish.",
+    "next": "crane",
+    "steps": 18,
+    "kb": 14
   },
   {
     "slug": "crane",
@@ -37,10 +76,10 @@ export const LIBRARY: LibraryEntry[] = [
     "difficulty": 3,
     "minutes": 15,
     "paper": "15 cm square, colour side down",
-    "technique": "Bird base, inside reverse folds",
+    "technique": "Narrowing, inside reverse folds",
     "blurb": "The model every folder wants to make. Two petal folds and three reverse folds.",
     "next": "lily",
-    "steps": 13,
-    "kb": 8
+    "steps": 21,
+    "kb": 20
   }
 ]

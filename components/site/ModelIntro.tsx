@@ -2,7 +2,7 @@
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
-import type { LibraryEntry } from "@/lib/library"
+import { LIBRARY, type LibraryEntry } from "@/lib/library"
 import { Button } from "@/components/ui/button"
 import { useModel, hasWebGL2 } from "@/lib/use-model"
 import { loadPref, loadProgress } from "@/lib/progress"
@@ -26,7 +26,7 @@ export function ModelIntro({ m, n }: { m: LibraryEntry; n: number }) {
       <div className="order-2 flex flex-col gap-6 lg:order-1">
         <div>
           <p className="text-[15px] text-muted-foreground tabular">
-            Model {n} of 7
+            Model {n} of {LIBRARY.length}
           </p>
           <h1 className="mt-1 text-section leading-[1.05] font-semibold">{m.title}</h1>
           <p className="mt-3 max-w-[40ch] text-[19px] leading-snug text-muted-foreground">{m.blurb}</p>

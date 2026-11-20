@@ -13,7 +13,7 @@ export function cup() {
       paper: "15 cm square, colour side down",
       technique: "Valley folds, tucking a flap",
       blurb: "Six folds and a pocket. The first model everyone should make.",
-      next: "square-base",
+      next: "masu-box",
     },
     { rotate: Math.PI / 4 }
   )

@@ -17,13 +17,14 @@ async function main() {
   const t1 = Date.now()
   const issues = validateModel(baked)
   console.log(`validate ${Date.now() - t1}ms`, issues.length ? issues : "clean")
+  const from = Number(process.argv[4] ?? 0)
   const cells = baked["fold:steps"]
-    .map((s, i) => {
+    .map((s, i) => i < from ? "" : (() => {
       const mid = stepSVG(baked, i, { t: 0.5, size: 220 })
       const end = stepSVG(baked, i, { t: 1, size: 220, guide: false })
       const start = stepSVG(baked, i, { t: 0, size: 220, guide: true })
       return `<div class=c><b>${i + 1}. ${s.title}</b><br><small>${s.text}</small><div>${start}${mid}${end}</div><small>tear ${m.e.records[i].maxTear.toExponential(1)} ${issues.filter((x) => x.step === i).map((x) => `<b style=color:red>${x.kind}: ${x.detail}</b>`).join(" ")}</small></div>`
-    })
+    })())
     .join("")
   writeFileSync(
     out,

@@ -140,4 +140,4 @@ export interface FoldFrame {
 }
 
 export const SAMPLES = 96
-export const LAYER = 0.0016
+export const LAYER = 0.0008

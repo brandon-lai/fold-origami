@@ -1,7 +1,7 @@
 "use client"
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { ContactShadows, Line, OrbitControls, PerformanceMonitor } from "@react-three/drei"
+import { Line, OrbitControls, PerformanceMonitor } from "@react-three/drei"
 import { useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three"
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js"
@@ -77,7 +77,7 @@ export function PaperScene({
     <Canvas
       className={className}
       dpr={dpr}
-      shadows={rich ? "soft" : false}
+      shadows="soft"
       camera={{ fov: FOV, near: 0.01, far: 40, position: [0, 2.2, 2.2] }}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
       onCreated={({ gl }) => {
@@ -231,7 +231,7 @@ function Paper({
   const flipAngle = useRef(0)
   const spinAngle = useRef(0)
   const lastSnap = useRef(-1)
-  const shadowRef = useRef<THREE.Group>(null)
+  const shadowRef = useRef<THREE.Mesh>(null)
 
   useEffect(() => {
     if (!captureRef) return
@@ -351,7 +351,7 @@ function Paper({
 
     // the table sits just under this step's lowest point
     if (shadowRef.current) {
-      const gy = box.minY - 0.03
+      const gy = box.minY - 0.02
       const sh = shadowRef.current.position
       sh.y = snapNow(f) ? gy : THREE.MathUtils.damp(sh.y, gy, 3, dt)
       sh.x = box.center.x
@@ -424,20 +424,11 @@ function Paper({
           </group>
         </group>
       </group>
-      {rich ? (
-        <ContactShadows
-          ref={shadowRef}
-          position={[firstCenter.x, boxes[0].minY - 0.03, firstCenter.z]}
-          scale={3.2}
-          blur={2.6}
-          far={1.4}
-          opacity={0.42}
-          resolution={512}
-          color="#2a2620"
-        />
-      ) : (
-        <ContactShadows ref={shadowRef} position={[firstCenter.x, boxes[0].minY - 0.03, firstCenter.z]} scale={3} blur={2.4} far={1.2} opacity={0.32} resolution={256} />
-      )}
+      {/* the table: catches the key light's real shadow (a soft studio shadow) */}
+      <mesh ref={shadowRef as unknown as React.RefObject<THREE.Mesh>} rotation={[-Math.PI / 2, 0, 0]} position={[firstCenter.x, boxes[0].minY - 0.02, firstCenter.z]} receiveShadow>
+        <planeGeometry args={[8, 8]} />
+        <shadowMaterial transparent opacity={rich ? 0.2 : 0.14} />
+      </mesh>
       {interactive && (
         <OrbitControls
           ref={controls}
