@@ -26,7 +26,7 @@ export function ModelIntro({ m, n }: { m: LibraryEntry; n: number }) {
       <div className="order-2 flex flex-col gap-6 lg:order-1">
         <div>
           <p className="text-[15px] text-muted-foreground tabular">
-            Model {n} of {LIBRARY.length}
+            Model {n} of {LIBRARY.length + 1}
           </p>
           <h1 className="mt-1 text-section leading-[1.05] font-semibold">{m.title}</h1>
           <p className="mt-3 max-w-[40ch] text-[19px] leading-snug text-muted-foreground">{m.blurb}</p>

@@ -32,8 +32,9 @@ export function Library({ models }: { models: LibraryEntry[] }) {
       {shown.length ? (
         <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((m) => (
-            <Card key={m.slug} m={m} total={models.length} />
+            <Card key={m.slug} m={m} total={models.length + 1} />
           ))}
+          {(level === "all" || level === "Intermediate") && time !== "5" && <Pending n={models.length + 1} />}
         </ul>
       ) : (
         <div className="mt-16 flex flex-col items-start gap-3">
@@ -66,6 +67,29 @@ function Filter({ label, value, onChange, options }: { label: string; value: str
         ))}
       </ToggleGroup>
     </div>
+  )
+}
+
+/** The seventh model is still being authored: shown plainly, not linked. */
+function Pending({ n }: { n: number }) {
+  return (
+    <li aria-label="Lily, not yet available" className="sm:col-span-full">
+      <div className="flex h-full flex-col gap-2 rounded-[18px] border border-dashed border-[color-mix(in_oklch,var(--foreground)_18%,transparent)] p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-baseline justify-between gap-3 text-[13px] text-muted-foreground tabular">
+            <span>
+              {n} of {n}, intermediate
+            </span>
+            <span>About 25 steps</span>
+          </div>
+          <h2 className="text-[22px] leading-tight font-semibold tracking-[-0.02em] text-muted-foreground">Lily</h2>
+          <p className="text-[15px] text-muted-foreground">New: frog base, curling petals</p>
+        </div>
+        <p className="max-w-[44ch] text-[15px] text-muted-foreground">
+          Being folded. The lily joins the path once every one of its folds passes the same checks as the others.
+        </p>
+      </div>
+    </li>
   )
 }
 
@@ -111,7 +135,7 @@ function Card({ m, total }: { m: LibraryEntry & { n: number }; total: number }) 
             </span>
           </div>
           <h2 className="text-[22px] leading-tight font-semibold tracking-[-0.02em]">{m.title}</h2>
-          <p className="text-[15px] text-muted-foreground">New: {m.technique.toLowerCase()}</p>
+          <p className="text-[15px] text-muted-foreground">New: {m.technique.charAt(0).toLowerCase() + m.technique.slice(1)}</p>
           {progress && (
             <p className="mt-auto pt-2 text-[13px] text-primary">{progress.done ? "Folded" : `Resume at step ${progress.step + 1}`}</p>
           )}

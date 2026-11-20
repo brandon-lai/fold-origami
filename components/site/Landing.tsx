@@ -32,32 +32,32 @@ export function Landing() {
           </div>
           <div className="pointer-events-none absolute inset-0 flex flex-col">
             {/* screen 1: the promise */}
-            <div className="flex h-dvh flex-col items-center px-6 pt-[16vh] text-center">
-              <h1 className="max-w-[12ch] text-hero leading-[1.02] font-semibold tracking-[-0.035em] sm:max-w-none">
+            <div className="mx-auto flex h-dvh w-full max-w-[1200px] flex-col justify-end px-6 pb-[9vh] min-[900px]:justify-center min-[900px]:pb-0">
+              <h1 className="max-w-[11ch] text-hero leading-[1.02] font-semibold tracking-[-0.035em]">
                 See exactly where the paper goes.
               </h1>
-              <p className="mt-5 max-w-[34ch] text-[19px] leading-snug text-muted-foreground sm:text-[21px]">
+              <p className="mt-5 max-w-[30ch] text-[19px] leading-snug text-muted-foreground sm:text-[21px]">
                 One sheet folds itself, one crease at a time. Turn it, scrub it, then copy it with your own paper.
               </p>
-              <Button size="lg" className="pointer-events-auto mt-8" render={<Link href="/models" />} nativeButton={false}>
+              <Button size="lg" className="pointer-events-auto mt-8 self-start" render={<Link href="/models" />} nativeButton={false}>
                 Start folding
               </Button>
             </div>
             {SCREENS.map((s) => (
-              <div key={s.title} className="flex h-[110dvh] items-end justify-center px-6 pb-[12vh]">
-                <div className="max-w-[30ch] text-center">
+              <div key={s.title} className="mx-auto flex h-[110dvh] w-full max-w-[1200px] items-end px-6 pb-[10vh] min-[900px]:items-center min-[900px]:pb-0">
+                <div className="max-w-[28ch]">
                   <h2 className="text-section leading-[1.05] font-semibold">{s.title}</h2>
                   <p className="mt-3 text-[19px] leading-snug text-muted-foreground">{s.body}</p>
                 </div>
               </div>
             ))}
-            <div className="flex h-[70dvh] items-end justify-center px-6 pb-[14vh]">
-              <div className="flex flex-col items-center text-center">
+            <div className="mx-auto flex h-[90dvh] w-full max-w-[1200px] items-end px-6 pb-[10vh] min-[900px]:items-center min-[900px]:pb-0">
+              <div className="flex flex-col items-start">
                 <h2 className="max-w-[16ch] text-section leading-[1.05] font-semibold">Start with a cup. Finish with a crane.</h2>
                 <p className="mt-3 max-w-[34ch] text-[19px] leading-snug text-muted-foreground">
                   Seven traditional models, each teaching one new fold. No account, no sign-up.
                 </p>
-                <Button size="lg" className="pointer-events-auto mt-7" render={<Link href="/models" />} nativeButton={false}>
+                <Button size="lg" className="pointer-events-auto mt-7 self-start" render={<Link href="/models" />} nativeButton={false}>
                   Start folding
                 </Button>
               </div>

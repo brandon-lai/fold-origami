@@ -10,7 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap", weight: ["400", "600"] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://fold-origami.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://fold-origami-six.vercel.app"),
   title: { default: "Fold: learn origami one crease at a time", template: "%s · Fold" },
   description:
     "One sheet of paper folds itself, one exact crease at a time. Turn it any way, scrub through each fold, and copy it with real paper.",

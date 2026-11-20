@@ -14,6 +14,7 @@ import {
   X,
   Move3d,
   Info,
+  Ellipsis,
 } from "lucide-react"
 import type { BakedModel } from "@/lib/fold/types"
 import { Button } from "@/components/ui/button"
@@ -144,7 +145,6 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
   const isLast = s.step === steps.length - 1
   const lastTap = useRef(0)
   const resetView = () => player.set({ guided: true })
-  const progress = (s.step + (s.phase === "guide" ? 0 : s.t)) / steps.length
 
   // swipe on the control area (touch): left = next, right = back
   const swipe = useRef<{ x: number; y: number; t: number } | null>(null)
@@ -288,15 +288,16 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
               <div className="min-w-0 flex-1 px-1">
                 <Slider
                   aria-label="Scrub through this fold"
+                  thumbLabel="Scrub through this fold"
                   min={0}
                   max={1000}
                   value={[Math.round(s.t * 1000)]}
                   onValueChange={(v) => player.scrub((Array.isArray(v) ? v[0] : v) / 1000)}
                   onValueCommitted={() => player.endScrub()}
                 />
-                <div className="-mt-1 flex justify-between text-[12px] text-muted-foreground tabular" aria-hidden>
-                  <span>{Math.round(progress * 100)}% folded</span>
-                  <span>{step.title}</span>
+                <div className="-mt-1 flex justify-between gap-2 text-[12px] whitespace-nowrap text-muted-foreground tabular" aria-hidden>
+                  <span>{Math.round((s.phase === "guide" ? 0 : s.t) * 100)}% of this fold</span>
+                  <span className="truncate">{step.title}</span>
                 </div>
               </div>
               <Button onClick={() => player.next()} className="min-w-[96px]" aria-label={isLast ? "Finish" : "Next step"}>
@@ -305,18 +306,20 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
               </Button>
             </div>
             <div className="flex items-center justify-between gap-1 border-t border-hairline pt-1 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-2">
+              <div className="hidden sm:flex">
               <ToggleGroup
-                aria-label="Playback speed"
-                value={[String(s.speed)]}
-                onValueChange={(v) => v[0] && player.set({ speed: Number(v[0]) as 0.5 | 1 | 2 })}
-                className="gap-0"
-              >
-                {["0.5", "1", "2"].map((v) => (
-                  <ToggleGroupItem key={v} value={v} aria-label={`${v}× speed`} className="h-11 min-w-11 rounded-full px-2 text-[13px] tabular">
-                    {v}×
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                  aria-label="Playback speed"
+                  value={[String(s.speed)]}
+                  onValueChange={(v) => v[0] && player.set({ speed: Number(v[0]) as 0.5 | 1 | 2 })}
+                  className="gap-0"
+                >
+                  {["0.5", "1", "2"].map((v) => (
+                    <ToggleGroupItem key={v} value={v} aria-label={`${v}× speed`} className="h-11 min-w-11 rounded-full px-2 text-[13px] tabular">
+                      {v}×
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+  </div>
               <ToolButton label="Replay this fold" onClick={() => player.replay()}>
                 <RotateCcw {...ICON} />
               </ToolButton>
@@ -331,6 +334,7 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
                 <ScanEye {...ICON} />
               </ToolButton>
               <PaperPicker value={s.paper} onChange={(id) => (player.set({ paper: id }), savePref("paper", id))} />
+              <div className="hidden sm:block">
               <ToolButton
                 label={s.sound ? "Mute paper sounds" : "Play paper sounds"}
                 pressed={s.sound}
@@ -342,10 +346,49 @@ export function Lesson({ model, slug, startAt }: { model: BakedModel; slug: stri
               >
                 {s.sound ? <Volume2 {...ICON} /> : <VolumeX {...ICON} />}
               </ToolButton>
+              </div>
+              <MoreMenu speed={s.speed} sound={s.sound} onSpeed={(v) => player.set({ speed: v })} onSound={() => {
+                paperSound.unlock()
+                player.set({ sound: !s.sound })
+                savePref("sound", !s.sound)
+              }} />
             </div>
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+/** On phones, speed and sound move into one menu so the bar stays one row of tools. */
+function MoreMenu({ speed, sound, onSpeed, onSound }: { speed: number; sound: boolean; onSpeed: (v: 0.5 | 1 | 2) => void; onSound: () => void }) {
+  return (
+    <div className="sm:hidden">
+      <Popover>
+        <PopoverTrigger render={<Button variant="ghost" size="icon" aria-label="Speed and sound" />}>
+          <Ellipsis {...ICON} />
+        </PopoverTrigger>
+        <PopoverContent side="top" align="end" className="w-64">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[15px]" id="m-speed">
+                Speed
+              </span>
+              <ToggleGroup aria-labelledby="m-speed" value={[String(speed)]} onValueChange={(v) => v[0] && onSpeed(Number(v[0]) as 0.5 | 1 | 2)} className="gap-0">
+                {["0.5", "1", "2"].map((v) => (
+                  <ToggleGroupItem key={v} value={v} aria-label={`${v}× speed`} className="h-11 min-w-11 rounded-full px-2 text-[13px] tabular">
+                    {v}×
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+            <Button variant="secondary" onClick={onSound} aria-pressed={sound}>
+              {sound ? <Volume2 {...ICON} /> : <VolumeX {...ICON} />}
+              {sound ? "Paper sounds on" : "Paper sounds off"}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }
@@ -387,7 +430,7 @@ export function Swatch({ id, active }: { id: string; active?: boolean }) {
   return (
     <span
       aria-hidden
-      className={cn("block size-6 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.12)]", active && "outline-2 outline-offset-2 outline-primary")}
+      className={cn("block size-6 rounded-full shadow-swatch", active && "outline-2 outline-offset-2 outline-primary")}
       style={{
         background: p.pattern
           ? `radial-gradient(circle at 30% 30%, ${p.ink} 0 18%, transparent 19%), radial-gradient(circle at 70% 70%, ${p.ink} 0 14%, transparent 15%), ${p.front}`

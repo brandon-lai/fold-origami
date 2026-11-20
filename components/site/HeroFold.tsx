@@ -26,7 +26,12 @@ export function HeroFold({ storyRef }: { storyRef: React.RefObject<HTMLElement |
   const progress = useRef(0)
   const [reduced, setReduced] = useState(false)
   const [webgl, setWebgl] = useState(true)
+  const [wide, setWide] = useState(true)
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)")
+    const onMq = () => setWide(mq.matches)
+    onMq()
+    mq.addEventListener("change", onMq)
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches)
     setWebgl(hasWebGL2())
     const onScroll = () => {
@@ -42,6 +47,7 @@ export function HeroFold({ storyRef }: { storyRef: React.RefObject<HTMLElement |
     return () => {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
+      mq.removeEventListener("change", onMq)
     }
   }, [storyRef])
 
@@ -70,5 +76,16 @@ export function HeroFold({ storyRef }: { storyRef: React.RefObject<HTMLElement |
     [model, reduced]
   )
   if (!model || !webgl) return null
-  return <PaperScene model={model} driver={driver} interactive={false} className="!absolute inset-0" framing={0.6} />
+  // desktop: paper on the right, words on the left; phone: paper above, words below
+  return (
+    <PaperScene
+      model={model}
+      driver={driver}
+      interactive={false}
+      className="!absolute inset-0"
+      framing={wide ? 0.66 : 0.5}
+      shiftX={wide ? 0.2 : 0}
+      lift={wide ? 0 : 0.17}
+    />
+  )
 }

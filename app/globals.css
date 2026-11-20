@@ -1,3 +1,4 @@
+/* Hallmark · dismissed 29 · the frosted control bar is the PRD's own layout spec, floating over the 3D paper */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -97,6 +98,8 @@
   --dur-panel: 320ms;
 
   --shadow-soft: 0 1px 2px rgb(29 29 31 / 0.04), 0 8px 24px rgb(29 29 31 / 0.06);
+  --shadow-thumb: 0 1px 4px rgb(0 0 0 / 0.25), 0 0 0 0.5px rgb(0 0 0 / 0.08);
+  --ring-swatch: inset 0 0 0 1px rgb(0 0 0 / 0.12);
   --shadow-panel: 0 2px 6px rgb(29 29 31 / 0.04), 0 18px 48px rgb(29 29 31 / 0.1);
 }
 

@@ -11,6 +11,8 @@ export function Showcase({
   className,
   framing,
   captureRef,
+  view,
+  floor = true,
 }: {
   model: BakedModel
   paper?: string
@@ -18,6 +20,8 @@ export function Showcase({
   className?: string
   framing?: number
   captureRef?: React.MutableRefObject<((size: number) => string) | null>
+  view?: { elevation?: number; azimuth?: number; zoom?: number }
+  floor?: boolean
 }) {
   const last = model["fold:steps"].length - 1
   const driver = useCallback(
@@ -33,10 +37,10 @@ export function Showcase({
       spin,
       snapNonce: 0,
       reduced: false,
-      view: { elevation: 46 },
+      view: { elevation: 46, ...view },
       endFrame: true,
     }),
-    [last, paper, spin]
+    [last, paper, spin, view]
   )
-  return <PaperScene model={model} driver={driver} interactive={false} className={className} framing={framing} quality="low" captureRef={captureRef} />
+  return <PaperScene model={model} driver={driver} interactive={false} className={className} framing={framing} quality="low" captureRef={captureRef} floor={floor} />
 }

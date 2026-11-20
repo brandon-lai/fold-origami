@@ -58,6 +58,8 @@ export function PaperScene({
   captureRef,
   framing = 0.74,
   lift = 0,
+  shiftX = 0,
+  floor = true,
 }: {
   model: BakedModel
   driver: Driver
@@ -70,6 +72,10 @@ export function PaperScene({
   framing?: number
   /** move the model up by this share of the height (room for controls below) */
   lift?: number
+  /** move the model right by this share of the width (room for copy on the left) */
+  shiftX?: number
+  /** draw the table shadow (off for transparent thumbnails) */
+  floor?: boolean
 }) {
   const [dpr, setDpr] = useState<number>(quality === "low" ? 1 : 1.75)
   const [rich, setRich] = useState(quality === "high")
@@ -103,6 +109,8 @@ export function PaperScene({
         captureRef={captureRef}
         framing={framing}
         lift={lift}
+        shiftX={shiftX}
+        floor={floor}
       />
     </Canvas>
   )
@@ -153,6 +161,8 @@ function Paper({
   captureRef,
   framing,
   lift,
+  shiftX,
+  floor,
 }: {
   model: BakedModel
   driver: Driver
@@ -162,6 +172,8 @@ function Paper({
   captureRef?: React.MutableRefObject<((size: number) => string) | null>
   framing: number
   lift: number
+  shiftX: number
+  floor: boolean
 }) {
   const { camera, size, gl, scene } = useThree()
   const controls = useRef<OrbitControlsImpl>(null)
@@ -364,8 +376,9 @@ function Paper({
     }
     const cam = camera as THREE.PerspectiveCamera
     const shift = Math.round(size.height * lift)
-    if (cam.view?.offsetY !== shift || cam.view?.fullHeight !== size.height || cam.view?.fullWidth !== size.width) {
-      if (shift) cam.setViewOffset(size.width, size.height, 0, shift, size.width, size.height)
+    const sx = -Math.round(size.width * shiftX)
+    if (cam.view?.offsetY !== shift || cam.view?.offsetX !== sx || cam.view?.fullHeight !== size.height || cam.view?.fullWidth !== size.width) {
+      if (shift || sx) cam.setViewOffset(size.width, size.height, sx, shift, size.width, size.height)
       else cam.clearViewOffset()
     }
     const hint = { ...(step.camera ?? {}), ...(f.view ?? {}) }
@@ -415,17 +428,17 @@ function Paper({
       <group ref={flipGroup}>
         <group ref={group}>
           <group rotation={[-Math.PI / 2, 0, 0]}>
-            <mesh geometry={geometry} material={paper.material} castShadow receiveShadow />
+            <mesh geometry={geometry} material={paper.material} castShadow />
             <lineSegments geometry={ghost} material={ghostMat} />
             {guideState.draw >= 0 &&
               guideState.pts.map(([a, b], i) => (
-                <Line key={i} points={[a, b]} color="#2b2b2e" lineWidth={2.2} transparent opacity={0.85} depthTest />
+                <Line key={i} points={[a, b]} color="#1d1d1f" lineWidth={3.2} transparent opacity={0.9} depthTest />
               ))}
           </group>
         </group>
       </group>
       {/* the table: catches the key light's real shadow (a soft studio shadow) */}
-      <mesh ref={shadowRef as unknown as React.RefObject<THREE.Mesh>} rotation={[-Math.PI / 2, 0, 0]} position={[firstCenter.x, boxes[0].minY - 0.02, firstCenter.z]} receiveShadow>
+      <mesh visible={floor} ref={shadowRef as unknown as React.RefObject<THREE.Mesh>} rotation={[-Math.PI / 2, 0, 0]} position={[firstCenter.x, boxes[0].minY - 0.02, firstCenter.z]} receiveShadow>
         <planeGeometry args={[8, 8]} />
         <shadowMaterial transparent opacity={rich ? 0.2 : 0.14} />
       </mesh>

@@ -161,7 +161,8 @@ export function pointAt(
     ]
   }
   const o1 = step.o1[face]
-  const ro = o0
+  // flexed layers carry their separation with the opening, so stacks open apart cleanly
+  const ro = fs ? applyR(R, o0) : o0
   return [
     x[0] + ro[0] * (1 - s) + o1[0] * s,
     x[1] + ro[1] * (1 - s) + o1[1] * s,

@@ -7,7 +7,12 @@ const Showcase = dynamic(() => import("@/components/fold/Showcase").then((m) => 
 
 export function ThumbStudio() {
   const [slug, setSlug] = useState<string | null>(null)
-  useEffect(() => setSlug(new URLSearchParams(location.search).get("slug")), [])
+  const [view, setView] = useState<{ elevation?: number; azimuth?: number }>({})
+  useEffect(() => {
+    const q = new URLSearchParams(location.search)
+    setSlug(q.get("slug"))
+    setView({ elevation: Number(q.get("el") ?? 46), azimuth: q.get("az") ? Number(q.get("az")) : undefined })
+  }, [])
   const { model } = useModel(slug ?? "crane")
   const cap = useRef<((s: number) => string) | null>(null)
   useEffect(() => {
@@ -16,7 +21,7 @@ export function ThumbStudio() {
   if (!model) return null
   return (
     <div style={{ width: 800, height: 800, position: "relative" }}>
-      <Showcase model={model} spin={0} className="!absolute inset-0" framing={0.78} captureRef={cap} />
+      <Showcase model={model} spin={0} className="!absolute inset-0" framing={0.78} captureRef={cap} view={view} floor={false} />
     </div>
   )
 }

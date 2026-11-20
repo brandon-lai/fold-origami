@@ -702,7 +702,9 @@ export class Engine {
       alive.forEach((id, i) => {
         const g = cls(i)
         const o = o0.get(id) as V3
-        o1.set(id, g >= 0 ? pivotOffset(matsEnd[g], o, live.groups[g].h ?? 0) : o)
+        // in a 3D shape, stacks meet at angles: real paper closes up, so do the offsets
+        const p = g >= 0 ? pivotOffset(matsEnd[g], o, live.groups[g].h ?? 0) : o
+        o1.set(id, [p[0] * 0.45, p[1] * 0.45, p[2] * 0.45])
       })
     }
     void oldNormals

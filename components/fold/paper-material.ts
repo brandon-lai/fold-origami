@@ -193,7 +193,7 @@ if ( gl_FrontFacing && uUsePattern > 0.5 ) diffuseColor.rgb = texture2D( uPatter
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
-totalEmissiveRadiance += vec3(1.0, 0.93, 0.78) * vGlow * uGlow * 0.16;`
+totalEmissiveRadiance += vec3(1.0, 0.93, 0.78) * vGlow * uGlow * 0.3;`
         )
         .replace(
           "#include <opaque_fragment>",
